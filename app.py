@@ -8,7 +8,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-from googlesearch import search
+#from googlesearch import search
+from serpapi import GoogleSearch
 import feedparser
 
 #from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -64,7 +65,8 @@ model2=genai.GenerativeModel("gemini-1.5-flash")
 MODEL = "stabilityai/stable-diffusion-xl-base-1.0"
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
 headers = {"Authorization": f"Bearer {st.secrets['hf_token']}"}
-
+#################################################################################################################
+serp_api_key= st.secrets["SERP_API_KEY"]
 
 
 ########embedding model#######################################
@@ -379,9 +381,22 @@ def create_formatted_doc_from_markdown(text_output):
 def main(query):
     try:
         # searching all the links from google
-        url= search(query)
-        for i in url:
-            urls.append(i)
+        params = {"q": query, "api_key": serp_api_key}
+        
+        search = GoogleSearch(params)
+        results = search.get_dict()
+        
+        for result in results.get("organic_results", []):
+            url=result.get("link")
+            urls.append(url)
+            
+
+
+
+        
+        #url= search(query)
+        #for i in url:
+            #urls.append(i)
     
         reranked_text= generate_knowledge_base(query)
         print(reranked_text)
@@ -483,6 +498,7 @@ st.subheader(f"🛡️ Recent Cyber Attacks and Breaches 🛡️")
 for i, title in enumerate(titles,1):
     st.write(f"{i}.🔴- {title}")
             
+
 
 
 
